@@ -139,3 +139,21 @@ main {
   background: #f8d7da;
   color: #721c24;
 }
+.hidden {
+  display: none;
+}
+.recipe-card button {
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #444;
+  color: white;
+  font-size: 0.8rem;
+}
+
+.recipe-card button:hover {
+  background: #222;
+}

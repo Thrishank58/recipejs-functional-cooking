@@ -1,118 +1,299 @@
-// ===============================
-// Recipe Data (DO NOT MUTATE)
-// ===============================
+const RecipeApp = (() => {
 
-const recipes = [
-  { id: 1, title: "Garlic Butter Pasta", time: 20, difficulty: "easy", description: "Creamy garlic butter pasta with herbs.", category: "pasta" },
-  { id: 2, title: "Avocado Toast Supreme", time: 15, difficulty: "easy", description: "Crispy toast topped with smashed avocado and spices.", category: "breakfast" },
-  { id: 3, title: "Chicken Alfredo", time: 45, difficulty: "medium", description: "Rich Alfredo sauce with grilled chicken.", category: "pasta" },
-  { id: 4, title: "Vegetable Stir Fry", time: 30, difficulty: "medium", description: "Colorful vegetables tossed in soy garlic sauce.", category: "vegan" },
-  { id: 5, title: "Beef Wellington", time: 90, difficulty: "hard", description: "Tender beef wrapped in puff pastry.", category: "meat" },
-  { id: 6, title: "Butter Chicken Curry", time: 75, difficulty: "hard", description: "Creamy tomato-based Indian curry.", category: "curry" },
-  { id: 7, title: "Caesar Salad", time: 25, difficulty: "easy", description: "Fresh romaine with Caesar dressing and croutons.", category: "salad" },
-  { id: 8, title: "Ramen Bowl Deluxe", time: 60, difficulty: "medium", description: "Japanese-style ramen with egg and veggies.", category: "soup" }
-];
+  // ===============================
+  // Private Data (All 8 Recipes)
+  // ===============================
 
-// ===============================
-// DOM Elements
-// ===============================
+  const recipes = [
+    {
+      id: 1,
+      title: "Garlic Butter Pasta",
+      time: 20,
+      difficulty: "easy",
+      description: "Creamy garlic butter pasta with herbs.",
+      category: "pasta",
+      ingredients: ["Pasta", "Garlic", "Butter", "Parsley", "Salt"],
+      steps: [
+        "Boil water and cook pasta.",
+        {
+          text: "Prepare garlic butter sauce",
+          substeps: [
+            "Melt butter in pan.",
+            "Add minced garlic.",
+            "Cook until fragrant."
+          ]
+        },
+        "Mix pasta with sauce and garnish."
+      ]
+    },
+    {
+      id: 2,
+      title: "Avocado Toast Supreme",
+      time: 15,
+      difficulty: "easy",
+      description: "Crispy toast topped with smashed avocado and spices.",
+      category: "breakfast",
+      ingredients: ["Bread", "Avocado", "Salt", "Pepper", "Chili flakes"],
+      steps: [
+        "Toast the bread.",
+        "Mash avocado with salt and pepper.",
+        "Spread on toast and garnish."
+      ]
+    },
+    {
+      id: 3,
+      title: "Chicken Alfredo",
+      time: 45,
+      difficulty: "medium",
+      description: "Rich Alfredo sauce with grilled chicken.",
+      category: "pasta",
+      ingredients: ["Chicken", "Cream", "Parmesan", "Garlic", "Pasta"],
+      steps: [
+        "Grill chicken.",
+        "Boil pasta.",
+        "Prepare Alfredo sauce.",
+        "Combine everything and serve."
+      ]
+    },
+    {
+      id: 4,
+      title: "Vegetable Stir Fry",
+      time: 30,
+      difficulty: "medium",
+      description: "Colorful vegetables tossed in soy garlic sauce.",
+      category: "vegan",
+      ingredients: ["Bell peppers", "Broccoli", "Soy sauce", "Garlic", "Carrots"],
+      steps: [
+        "Chop vegetables.",
+        "Heat oil in wok.",
+        "Stir fry vegetables.",
+        "Add sauce and toss."
+      ]
+    },
+    {
+      id: 5,
+      title: "Beef Wellington",
+      time: 90,
+      difficulty: "hard",
+      description: "Tender beef wrapped in puff pastry.",
+      category: "meat",
+      ingredients: ["Beef fillet", "Mushrooms", "Puff pastry", "Egg yolk"],
+      steps: [
+        "Sear the beef.",
+        {
+          text: "Prepare mushroom duxelles",
+          substeps: [
+            "Finely chop mushrooms.",
+            "Cook until moisture evaporates.",
+            {
+              text: "Season mixture",
+              substeps: [
+                "Add salt.",
+                "Add pepper."
+              ]
+            }
+          ]
+        },
+        "Wrap beef in pastry.",
+        "Bake until golden."
+      ]
+    },
+    {
+      id: 6,
+      title: "Butter Chicken Curry",
+      time: 75,
+      difficulty: "hard",
+      description: "Creamy tomato-based Indian curry.",
+      category: "curry",
+      ingredients: ["Chicken", "Tomato puree", "Cream", "Spices", "Butter"],
+      steps: [
+        "Marinate chicken.",
+        "Cook chicken.",
+        "Prepare curry base.",
+        "Simmer together."
+      ]
+    },
+    {
+      id: 7,
+      title: "Caesar Salad",
+      time: 25,
+      difficulty: "easy",
+      description: "Fresh romaine with Caesar dressing and croutons.",
+      category: "salad",
+      ingredients: ["Romaine", "Croutons", "Parmesan", "Caesar dressing"],
+      steps: [
+        "Wash lettuce.",
+        "Add croutons and cheese.",
+        "Toss with dressing."
+      ]
+    },
+    {
+      id: 8,
+      title: "Ramen Bowl Deluxe",
+      time: 60,
+      difficulty: "medium",
+      description: "Japanese-style ramen with egg and veggies.",
+      category: "soup",
+      ingredients: ["Ramen noodles", "Egg", "Broth", "Vegetables", "Soy sauce"],
+      steps: [
+        "Boil broth.",
+        "Cook noodles.",
+        {
+          text: "Prepare toppings",
+          substeps: [
+            "Soft boil egg.",
+            "Slice vegetables."
+          ]
+        },
+        "Assemble bowl."
+      ]
+    }
+  ];
 
-const recipeContainer = document.querySelector("#recipe-container");
-const filterButtons = document.querySelectorAll("[data-filter]");
-const sortButtons = document.querySelectorAll("[data-sort]");
+  // ===============================
+  // Private State
+  // ===============================
 
-// ===============================
-// App State (controlled centrally)
-// ===============================
+  let currentFilter = "all";
+  let currentSort = null;
 
-let currentFilter = "all";
-let currentSort = null;
+  const recipeContainer = document.querySelector("#recipe-container");
 
-// ===============================
-// Pure Filtering Function
-// ===============================
+  // ===============================
+  // Pure Filtering
+  // ===============================
 
-const applyFilter = (recipesArray, filter) => {
-  if (filter === "all") return recipesArray;
+  const applyFilter = (data, filter) => {
+    if (filter === "all") return data;
+    if (filter === "quick") return data.filter(r => r.time < 30);
+    return data.filter(r => r.difficulty === filter);
+  };
 
-  if (filter === "quick") {
-    return recipesArray.filter(recipe => recipe.time < 30);
-  }
+  // ===============================
+  // Pure Sorting
+  // ===============================
 
-  return recipesArray.filter(recipe => recipe.difficulty === filter);
-};
+  const applySort = (data, sortType) => {
+    if (!sortType) return data;
+    const cloned = [...data];
 
-// ===============================
-// Pure Sorting Function
-// ===============================
+    if (sortType === "name") {
+      return cloned.sort((a, b) => a.title.localeCompare(b.title));
+    }
 
-const applySort = (recipesArray, sortType) => {
-  if (!sortType) return recipesArray;
+    if (sortType === "time") {
+      return cloned.sort((a, b) => a.time - b.time);
+    }
 
-  const sorted = [...recipesArray]; // clone to avoid mutation
+    return cloned;
+  };
 
-  if (sortType === "name") {
-    return sorted.sort((a, b) => a.title.localeCompare(b.title));
-  }
+  // ===============================
+  // Recursive Step Renderer
+  // ===============================
 
-  if (sortType === "time") {
-    return sorted.sort((a, b) => a.time - b.time);
-  }
+  const renderSteps = (stepsArray) => {
+    return `
+      <ul>
+        ${stepsArray.map(step => {
+          if (typeof step === "string") {
+            return `<li>${step}</li>`;
+          }
+          return `
+            <li>
+              ${step.text}
+              ${step.substeps ? renderSteps(step.substeps) : ""}
+            </li>
+          `;
+        }).join("")}
+      </ul>
+    `;
+  };
 
-  return sorted;
-};
+  // ===============================
+  // Card Renderer
+  // ===============================
 
-// ===============================
-// Create Recipe Card
-// ===============================
+  const createRecipeCard = (recipe) => {
+    return `
+      <div class="recipe-card">
+        <h3>${recipe.title}</h3>
+        <div class="recipe-meta">
+          <span>⏱️ ${recipe.time} min</span>
+          <span class="difficulty ${recipe.difficulty}">
+            ${recipe.difficulty}
+          </span>
+        </div>
+        <p>${recipe.description}</p>
 
-const createRecipeCard = (recipe) => {
-  return `
-    <div class="recipe-card" data-id="${recipe.id}">
-      <h3>${recipe.title}</h3>
-      <div class="recipe-meta">
-        <span>⏱️ ${recipe.time} min</span>
-        <span class="difficulty ${recipe.difficulty}">
-          ${recipe.difficulty}
-        </span>
+        <button class="toggle-steps">Show Steps</button>
+        <button class="toggle-ingredients">Show Ingredients</button>
+
+        <div class="steps hidden">
+          ${renderSteps(recipe.steps)}
+        </div>
+
+        <div class="ingredients hidden">
+          <ul>
+            ${recipe.ingredients.map(i => `<li>${i}</li>`).join("")}
+          </ul>
+        </div>
       </div>
-      <p>${recipe.description}</p>
-    </div>
-  `;
-};
+    `;
+  };
 
-// ===============================
-// Central Update Function
-// ===============================
+  // ===============================
+  // Central Update
+  // ===============================
 
-const updateDisplay = () => {
-  const filtered = applyFilter(recipes, currentFilter);
-  const sorted = applySort(filtered, currentSort);
+  const updateDisplay = () => {
+    const filtered = applyFilter(recipes, currentFilter);
+    const sorted = applySort(filtered, currentSort);
 
-  const html = sorted.map(createRecipeCard).join("");
-  recipeContainer.innerHTML = html;
-};
+    recipeContainer.innerHTML = sorted
+      .map(createRecipeCard)
+      .join("");
+  };
 
-// ===============================
-// Event Listeners
-// ===============================
+  // ===============================
+  // Event Delegation
+  // ===============================
 
-filterButtons.forEach(button => {
-  button.addEventListener("click", () => {
-    currentFilter = button.dataset.filter;
+  const setupEventListeners = () => {
+
+    document.addEventListener("click", (e) => {
+
+      if (e.target.dataset.filter) {
+        currentFilter = e.target.dataset.filter;
+        updateDisplay();
+      }
+
+      if (e.target.dataset.sort) {
+        currentSort = e.target.dataset.sort;
+        updateDisplay();
+      }
+
+      if (e.target.classList.contains("toggle-steps")) {
+        const card = e.target.closest(".recipe-card");
+        card.querySelector(".steps").classList.toggle("hidden");
+      }
+
+      if (e.target.classList.contains("toggle-ingredients")) {
+        const card = e.target.closest(".recipe-card");
+        card.querySelector(".ingredients").classList.toggle("hidden");
+      }
+
+    });
+
+  };
+
+  const init = () => {
     updateDisplay();
-  });
-});
+    setupEventListeners();
+  };
 
-sortButtons.forEach(button => {
-  button.addEventListener("click", () => {
-    currentSort = button.dataset.sort;
-    updateDisplay();
-  });
-});
+  return { init };
 
-// ===============================
-// Initialize
-// ===============================
+})();
 
-updateDisplay();
+RecipeApp.init();
