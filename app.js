@@ -1,7 +1,7 @@
 const RecipeApp = (() => {
 
   // ===============================
-  // Private Data (All 8 Recipes)
+  // Recipe Data
   // ===============================
 
   const recipes = [
@@ -151,17 +151,48 @@ const RecipeApp = (() => {
   ];
 
   // ===============================
-  // Private State
+  // State
   // ===============================
 
   let currentFilter = "all";
   let currentSort = null;
+  let currentSearch = "";
+  let showFavoritesOnly = false;
+
+  let favorites = new Set(JSON.parse(localStorage.getItem("favorites")) || []);
 
   const recipeContainer = document.querySelector("#recipe-container");
+  const searchInput = document.querySelector("#search-input");
+  const favoritesFilterBtn = document.querySelector("#favorites-filter");
 
   // ===============================
-  // Pure Filtering
+  // Utility: Debounce
   // ===============================
+
+  const debounce = (func, delay) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  // ===============================
+  // Pure Functions
+  // ===============================
+
+  const applySearch = (data, searchTerm) => {
+    if (!searchTerm) return data;
+
+    const lower = searchTerm.toLowerCase();
+
+    return data.filter(recipe =>
+      recipe.title.toLowerCase().includes(lower) ||
+      recipe.ingredients.some(ing =>
+        ing.toLowerCase().includes(lower)
+      )
+    );
+  };
 
   const applyFilter = (data, filter) => {
     if (filter === "all") return data;
@@ -169,9 +200,10 @@ const RecipeApp = (() => {
     return data.filter(r => r.difficulty === filter);
   };
 
-  // ===============================
-  // Pure Sorting
-  // ===============================
+  const applyFavoritesFilter = (data) => {
+    if (!showFavoritesOnly) return data;
+    return data.filter(recipe => favorites.has(recipe.id));
+  };
 
   const applySort = (data, sortType) => {
     if (!sortType) return data;
@@ -187,10 +219,6 @@ const RecipeApp = (() => {
 
     return cloned;
   };
-
-  // ===============================
-  // Recursive Step Renderer
-  // ===============================
 
   const renderSteps = (stepsArray) => {
     return `
@@ -215,15 +243,24 @@ const RecipeApp = (() => {
   // ===============================
 
   const createRecipeCard = (recipe) => {
+    const isFav = favorites.has(recipe.id);
+
     return `
       <div class="recipe-card">
-        <h3>${recipe.title}</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>${recipe.title}</h3>
+          <button class="favorite-btn" data-id="${recipe.id}">
+            ${isFav ? "❤️" : "🤍"}
+          </button>
+        </div>
+
         <div class="recipe-meta">
           <span>⏱️ ${recipe.time} min</span>
           <span class="difficulty ${recipe.difficulty}">
             ${recipe.difficulty}
           </span>
         </div>
+
         <p>${recipe.description}</p>
 
         <button class="toggle-steps">Show Steps</button>
@@ -247,16 +284,24 @@ const RecipeApp = (() => {
   // ===============================
 
   const updateDisplay = () => {
-    const filtered = applyFilter(recipes, currentFilter);
-    const sorted = applySort(filtered, currentSort);
 
-    recipeContainer.innerHTML = sorted
+    let result = recipes;
+
+    result = applySearch(result, currentSearch);
+    result = applyFilter(result, currentFilter);
+    result = applyFavoritesFilter(result);
+    result = applySort(result, currentSort);
+
+    recipeContainer.innerHTML = result
       .map(createRecipeCard)
       .join("");
+
+    document.querySelector("#recipe-count").textContent =
+      `Showing ${result.length} of ${recipes.length} recipes`;
   };
 
   // ===============================
-  // Event Delegation
+  // Event Listeners
   // ===============================
 
   const setupEventListeners = () => {
@@ -283,6 +328,32 @@ const RecipeApp = (() => {
         card.querySelector(".ingredients").classList.toggle("hidden");
       }
 
+      if (e.target.classList.contains("favorite-btn")) {
+        const id = Number(e.target.dataset.id);
+
+        if (favorites.has(id)) {
+          favorites.delete(id);
+        } else {
+          favorites.add(id);
+        }
+
+        localStorage.setItem("favorites", JSON.stringify([...favorites]));
+        updateDisplay();
+      }
+
+    });
+
+    searchInput.addEventListener(
+      "input",
+      debounce((e) => {
+        currentSearch = e.target.value;
+        updateDisplay();
+      }, 300)
+    );
+
+    favoritesFilterBtn.addEventListener("click", () => {
+      showFavoritesOnly = !showFavoritesOnly;
+      updateDisplay();
     });
 
   };
